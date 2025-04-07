@@ -1,0 +1,38 @@
+import requests
+
+# Define the URL of the FastAPI app's prediction endpoint
+url = "http://127.0.0.1:8000/predict/"
+
+# Define the data to send in the POST request
+data = {
+  "gender": "Male",
+  "age_in_years": 31,
+  "type_of_testing": "Oral Fluid (Back to Lab Only)",
+  "declared_medication": "no",
+  "alcohol_result": "Pass",
+  "breath_test_result": 0,
+  "company_cut_off_level": 0.35,
+  "drug_result": "Negative",
+  "drugs_non_negative": "None",
+  "year": 2020,
+  "month": 1,
+  "day_of_week": 3,
+  "weekOfYear": 1,
+  "hour": 2,
+  "minutes": 43,
+  "seconds": 58
+}
+
+
+
+# Send a POST request to the FastAPI server with the data
+response = requests.post(url, json=data)
+
+# Check if the request was successful
+if response.status_code == 200:
+    # If successful, print the prediction
+    print(f"Prediction: {response.json()}")
+else:
+    # If there was an error, print the error message
+    print(f"Error: {response.status_code}, {response.text}")
+

@@ -1,0 +1,68 @@
+import pytest
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_root_endpoint():
+    """Test the root endpoint."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "Lab Result Prediction API" in response.text
+
+def test_predict_endpoint_positive():
+    """Test the prediction endpoint with a positive result."""
+    data = {
+        "gender": "Male",
+        "age_in_years": 30,
+        "type_of_testing": "Oral Fluid (Drugs Only)",
+        "declared_medication": "no",
+        "alcohol_result": "Pass",
+        "breath_test_result": 0.0000,
+        "company_cut_off_level": 0.35,
+        "drug_result": "Non-Negative",
+        "drugs_non_negative": "Methadone",
+        "year": 2023,
+        "month": 5,
+        "day_of_week": 2,
+        "weekOfYear": 20,
+        "hour": 14,
+        "minutes": 30,
+        "seconds": 45
+    }
+    response = client.post("/predict/", json=data)
+    assert response.status_code == 200
+    assert response.json() == {"prediction": ["Positive"]}
+
+def test_predict_endpoint_negative():
+    """Test the prediction endpoint with a negative result."""
+    data = {
+        "gender": "Female",
+        "age_in_years": 25,
+        "type_of_testing": "Urine (Drugs Only)",
+        "declared_medication": "yes",
+        "alcohol_result": "Pass",
+        "breath_test_result": 0.0000,
+        "company_cut_off_level": 0.35,
+        "drug_result": "Negative",
+        "drugs_non_negative": "None",
+        "year": 2023,
+        "month": 5,
+        "day_of_week": 2,
+        "weekOfYear": 20,
+        "hour": 10,
+        "minutes": 45,
+        "seconds": 30
+    }
+    response = client.post("/predict/", json=data)
+    assert response.status_code == 200
+    assert response.json() == {"prediction": ["Negative"]}
+
+def test_invalid_input():
+    """Test the prediction endpoint with invalid input."""
+    data = {
+        "gender": "Alien",  # Invalid value
+        "age_in_years": "thirty",  # Invalid type
+    }
+    response = client.post("/predict/", json=data)
+    assert response.status_code == 422  # Unprocessable Entity

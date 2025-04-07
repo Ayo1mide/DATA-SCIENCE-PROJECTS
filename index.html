@@ -1,0 +1,388 @@
+<!DOCTYPE html>  
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #d3d3d3;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+
+        .header-box {
+            background-color: #259e3f;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0;
+            text-transform: uppercase;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* Make inputs faint by default */
+        input.faint, select.faint {
+            background-color: #f0f0f0;
+            opacity: 0.5;
+            color: #777;
+            font-weight: normal;
+        }
+
+        /* Remove faint effect when text is entered or focused */
+        input.faint:focus, select.faint:focus, input.faint:not(:placeholder-shown), select.faint:not(:placeholder-shown) {
+            background-color: #fff;
+            opacity: 1;
+            color: #000;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+            padding: 12px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f7df;
+            border: 1px solid #d0e9b3;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .spinner {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-box">
+            <h1>LAB RESULT PREDICTIONS</h1>
+        </div>
+
+        <form id="predictionForm">
+            <label for="gender">Gender</label>
+            <select id="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <div class="error" id="genderError"></div>
+
+            <label for="age_in_years">Age</label>
+            <input type="number" id="age_in_years" min="15" max="65" required placeholder="Enter age">
+            <div class="error" id="ageError"></div>
+
+            <label for="type_of_testing">Type of Testing</label>
+            <select id="type_of_testing" required>
+                <option value="Oral Fluid (Drugs Only)">Oral Fluid (Drugs Only)</option>
+                <option value="Oral Fluid (Back to Lab & Breath)">Oral Fluid (Back to Lab & Breath)</option>
+                <option value="Urine (Drugs Only)">Urine (Drugs Only)</option>
+                <option value="Oral Fluid (Back to Lab Only)">Oral Fluid (Back to Lab Only)</option>
+                <option value="Breath Only">Breath Only</option>
+                <option value="Oral Fluid (Drugs & Breath)">Oral Fluid (Drugs & Breath)</option>
+                <option value="Urine (Back to Lab & Breath)">Urine (Back to Lab & Breath)</option>
+                <option value="Urine (with Alcohol)">Urine (with Alcohol)</option>
+                <option value="Urine (Drugs & Breath)">Urine (Drugs & Breath)</option>
+                <option value="Urine (Back to Lab Only)">Urine (Back to Lab Only)</option>
+            </select>
+            <div class="error" id="testingError"></div>
+
+            <label for="declared_medication">Declared Medication</label>
+            <select id="declared_medication" required>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+            <div class="error" id="medicationError"></div>
+
+            <label for="alcohol_result">Alcohol Result</label>
+            <select id="alcohol_result" required>
+                <option value="Pass">Pass</option>
+                <option value="Fail">Fail</option>
+            </select>
+            <div class="error" id="alcoholError"></div>
+
+            <label for="breath_test_result">Breath Test Result</label>
+            <input type="number" id="breath_test_result" step="0.0001" required placeholder="Breath result" class="faint">
+            <div class="error" id="breathTestError"></div>
+
+            <label for="company_cut_off_level">Company Cut-Off Level</label>
+            <input type="number" id="company_cut_off_level" step="0.01" required placeholder="Cut-off level" class="faint">
+            <div class="error" id="cutOffError"></div>
+
+            <label for="drug_result">Drug Result</label>
+            <select id="drug_result" required>
+                <option value="Negative">Negative</option>
+                <option value="Non-Negative">Non-Negative</option>
+            </select>
+            <div class="error" id="drugResultError"></div>
+
+            <label for="drugs_non_negative">Drugs Non-Negative</label>
+            <select id="drugs_non_negative" required>
+                <option value="None">None</option>
+                <option value="Methadone">Methadone</option>
+                <option value="Cocaine">Cocaine</option>
+                <option value="Other">Other</option>
+                <option value="Amphetamines">Amphetamines</option>
+                <option value="Methamphetamine">Methamphetamine</option>
+                <option value="Ecstasy">Ecstasy</option>
+                <option value="Cannabis">Cannabis</option>
+                <option value="Barbiturates">Barbiturates</option>
+                <option value="Benzodiazepine">Benzodiazepine</option>
+                <option value="Tri-cyclic Antidepressants">Tri-cyclic Antidepressants</option>
+                <option value="Opiates">Opiates</option>
+                <option value="Tramadol">Tramadol</option>
+            </select>
+            <div class="error" id="drugsNegativeError"></div>
+
+            <label for="year">Year</label>
+            <input type="number" id="year" required placeholder="Enter Year" class="faint">
+            <div class="error" id="yearError"></div>
+
+            <label for="month">Month</label>
+            <input type="number" id="month" min="1" max="12" required placeholder="Month (1-12)" class="faint">
+            <div class="error" id="monthError"></div>
+
+            <label for="day_of_week">Day of Week</label>
+            <input type="number" id="day_of_week" min="1" max="7" required placeholder="Day (1-7)" class="faint">
+            <div class="error" id="dayError"></div>
+
+            <label for="weekOfYear">Week of Year</label>
+            <input type="number" id="weekOfYear" min="1" max="53" required placeholder="What week of the year?" class="faint">
+            <div class="error" id="weekError"></div>
+
+            <label for="hour">Hour</label>
+            <input type="number" id="hour" min="0" max="23" required placeholder="Hour (0-23)" class="faint">
+            <div class="error" id="hourError"></div>
+
+            <label for="minutes">Minutes</label>
+            <input type="number" id="minutes" min="0" max="59" required placeholder="Minutes (0-59)" class="faint">
+            <div class="error" id="minuteError"></div>
+
+            <label for="seconds">Seconds</label>
+            <input type="number" id="seconds" min="0" max="59" required placeholder="Seconds (0-59)" class="faint">
+            <div class="error" id="secondError"></div>
+
+            <button type="submit">Predict</button>
+        </form>
+
+        <!-- CSV Upload Section -->
+        <label for="csvUpload">Upload CSV</label>
+        <input type="file" id="csvUpload" accept=".csv">
+        <button id="csvUploadButton">Upload CSV for Predictions</button>
+
+        <div class="spinner" id="spinner"></div>
+        <div class="result" id="result"></div>
+        <button id="generateReport">Generate Report</button>
+    </div>
+
+    <script>
+        // Handle form submission for predictions
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            document.getElementById('spinner').style.display = 'block';
+    
+            const data = {
+                gender: document.getElementById('gender').value,
+                age_in_years: parseInt(document.getElementById('age_in_years').value),
+                type_of_testing: document.getElementById('type_of_testing').value,
+                declared_medication: document.getElementById('declared_medication').value,
+                alcohol_result: document.getElementById('alcohol_result').value,
+                breath_test_result: parseFloat(document.getElementById('breath_test_result').value),
+                company_cut_off_level: parseFloat(document.getElementById('company_cut_off_level').value),
+                drug_result: document.getElementById('drug_result').value,
+                drugs_non_negative: document.getElementById('drugs_non_negative').value,
+                year: parseInt(document.getElementById('year').value),
+                month: parseInt(document.getElementById('month').value),
+                day_of_week: parseInt(document.getElementById('day_of_week').value),
+                weekOfYear: parseInt(document.getElementById('weekOfYear').value),
+                hour: parseInt(document.getElementById('hour').value),
+                minutes: parseInt(document.getElementById('minutes').value),
+                seconds: parseInt(document.getElementById('seconds').value),
+            };
+    
+            try {
+                const response = await fetch('/predict/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+    
+                if (response.ok) {
+                    const prediction = await response.json();
+                    document.getElementById('result').innerText = `Prediction Result: ${prediction.result}`;
+                } else {
+                    const error = await response.text();
+                    document.getElementById('result').innerText = `Error: ${error}`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerText = 'An unexpected error occurred.';
+            } finally {
+                document.getElementById('spinner').style.display = 'none';
+            }
+        });
+    
+        // Handle CSV upload for batch predictions
+        document.getElementById('csvUploadButton').addEventListener('click', async () => {
+            const fileInput = document.getElementById('csvUpload');
+            const file = fileInput.files[0];
+    
+            if (!file) {
+                alert('Please select a CSV file before uploading.');
+                return;
+            }
+    
+            const formData = new FormData();
+            formData.append('file', file);
+    
+            document.getElementById('spinner').style.display = 'block'; // Show spinner during processing
+            document.getElementById('result').innerText = ''; // Clear previous results
+    
+            try {
+                const response = await fetch('/upload_batch', {
+                    method: 'POST',
+                    body: formData,
+                });
+    
+                if (response.ok) {
+                    const blob = await response.blob();
+    
+                    // Create a download link for the processed CSV
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'Lab_Result_predictions.csv'; // Suggested filename
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+    
+                    document.getElementById('result').innerText = 'CSV processed successfully. File downloaded!';
+                } else {
+                    const errorText = await response.text();
+                    document.getElementById('result').innerText = `Error processing CSV: ${errorText}`;
+                }
+            } catch (error) {
+                console.error('Error uploading CSV:', error);
+                document.getElementById('result').innerText = 'An unexpected error occurred. Please try again.';
+            } finally {
+                document.getElementById('spinner').style.display = 'none'; // Hide spinner after processing
+            }
+        });
+    
+        // Placeholder for generating reports
+        document.getElementById('generateReport').addEventListener('click', async () => {
+        const inputData = {
+            gender: document.getElementById('gender').value,
+                age_in_years: parseInt(document.getElementById('age_in_years').value),
+                type_of_testing: document.getElementById('type_of_testing').value,
+                declared_medication: document.getElementById('declared_medication').value,
+                alcohol_result: document.getElementById('alcohol_result').value,
+                breath_test_result: parseFloat(document.getElementById('breath_test_result').value),
+                company_cut_off_level: parseFloat(document.getElementById('company_cut_off_level').value),
+                drug_result: document.getElementById('drug_result').value,
+                drugs_non_negative: document.getElementById('drugs_non_negative').value,
+                year: parseInt(document.getElementById('year').value),
+                month: parseInt(document.getElementById('month').value),
+                day_of_week: parseInt(document.getElementById('day_of_week').value),
+                weekOfYear: parseInt(document.getElementById('weekOfYear').value),
+                hour: parseInt(document.getElementById('hour').value),
+                minutes: parseInt(document.getElementById('minutes').value),
+                seconds: parseInt(document.getElementById('seconds').value),
+        };
+
+        try {
+            const response = await fetch('/generate_report/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(inputData),
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'lab_result_report.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('Report downloaded successfully!');
+            } else {
+                const errorDetail = await response.json();
+                alert(`Error: ${errorDetail.detail}`);
+            }
+        } catch (error) {
+            console.error('Error generating report:', error);
+            alert('An unexpected error occurred.');
+        }
+    });
+    </script>
+    
+</body>
+</html>
